@@ -4,6 +4,7 @@ on:
     branches: [ "main" ]
 
 permissions:
+  id-token: write
   contents: read
 
 jobs:
@@ -27,16 +28,10 @@ jobs:
         with:
           arguments: clean bootJar
 
-      #Docker Hub 로그인
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      #이미지 업로드
-      - name: build and release
-        run: |
-          docker build -t 2024-cicd .
-          docker tag 2024-cicd:latest ${{ secrets.DOCKERHUB_USERNAME }}/2024-cicd:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/2024-cicd:latest
+          # arn 값은 자격 증명 공급자에서 만든 role(역할)에서 찾아서 설정
+          role-to-assume: arn:aws:iam::484907495106:role/cicd
+          role-session-name: sampleSessionName
+          aws-region: 'ap-northeast-2'
